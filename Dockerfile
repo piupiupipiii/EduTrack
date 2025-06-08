@@ -1,10 +1,11 @@
-FROM python:3.11-slim
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
 WORKDIR /app
 
-COPY ./app /app
-COPY ./app/requirements.txt .
+COPY ./app .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN uv sync --locked
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENV PATH="/app/.venv/bin:$PATH"
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
