@@ -78,6 +78,22 @@ return [
             'sslmode' => 'prefer',
         ],
 
+        'mysql_gcp' => [
+            'driver' => 'mysql',
+            'host' => env('DB_GCP_HOST', '34.56.153.154'),
+            'port' => env('DB_GCP_PORT', '3306'),
+            'database' => env('DB_GCP_DATABASE', 'uas-db'),
+            'username' => env('DB_GCP_USERNAME', 'root'),
+            'password' => env('DB_GCP_PASSWORD', 'Uas_pipi_aliya1'),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DATABASE_URL'),
