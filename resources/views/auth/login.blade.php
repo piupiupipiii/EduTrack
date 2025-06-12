@@ -1,90 +1,139 @@
-@extends('layouts.app') <!-- Menambahkan layout -->
+@extends('layouts.app')
 
-@section('title', 'Login') <!-- Judul Halaman Login -->
+@section('title', 'Login')
 
-@section('content') <!-- Konten halaman login -->
+@section('content')
 
 <style>
-    /* Gradient untuk header dan tombol */
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        font-family: 'Poppins', sans-serif;
+    }
+
     .gradient-header {
-        background: linear-gradient(to right, #4f46e5, #7c3aed);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border-top-left-radius: 0.5rem;
         border-top-right-radius: 0.5rem;
-        padding: 1rem;
+        padding: 1.5rem;
         text-align: center;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     }
 
     .gradient-button {
-        background: linear-gradient(to right, #4f46e5, #7c3aed);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border: none;
         color: white;
-        font-weight: bold;
+        font-weight: 600;
         padding: 0.75rem;
         border-radius: 0.375rem;
         width: 100%;
-        transition: 0.3s ease;
+        transition: all 0.3s ease;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 6px rgba(102, 126, 234, 0.2);
     }
 
     .gradient-button:hover {
-        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 7px 14px rgba(102, 126, 234, 0.3);
+    }
+
+    .gradient-button:active {
+        transform: translateY(0);
+    }
+
+    .form-control {
+        border: 1px solid #e2e8f0;
+        padding: 0.75rem;
+        border-radius: 0.375rem;
+        transition: border-color 0.2s ease;
+    }
+
+    .form-control:focus {
+        border-color: #a0aec0;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+
+    a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    a:hover {
+        color: #764ba2;
+        text-decoration: underline;
+    }
+
+    .invalid-feedback {
+        color: #e53e3e;
+        font-size: 0.875rem;
     }
 </style>
 
-<div class="container">
+<div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-lg">
+        <div class="col-md-6 col-lg-5">
+            <div class="card">
                 <div class="gradient-header">
-                    <h4>Login</h4>
+                    <h4 class="mb-0">Login</h4>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
 
-                        <!-- Email Input -->
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email"
-                                class="form-control @error('email') is-invalid @enderror"
-                                id="email" name="email"
-                                value="{{ old('email') }}"
-                                required autofocus>
+                        <!-- Email -->
+                        <div class="mb-4">
+                            <label for="email" class="form-label fw-medium">Email</label>
+                            <input type="email" class="form-control @error('email') is-invalid @enderror"
+                                id="email" name="email" value="{{ old('email') }}" required autofocus>
                             @error('email')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <!-- Password Input -->
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password"
-                                class="form-control @error('password') is-invalid @enderror"
-                                id="password" name="password"
-                                required>
+                        <!-- Password -->
+                        <div class="mb-4">
+                            <label for="password" class="form-label fw-medium">Password</label>
+                            <input type="password" class="form-control @error('password') is-invalid @enderror"
+                                id="password" name="password" required>
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <!-- Remember Me -->
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input"
-                                id="remember" name="remember">
+                        <div class="mb-4 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember" name="remember">
                             <label class="form-check-label" for="remember">Remember Me</label>
                         </div>
 
-                        <!-- Login Button -->
-                        <button type="submit" class="gradient-button">Login</button>
+                        <!-- Submit -->
+                        <button type="submit" class="gradient-button mb-3">Login</button>
                     </form>
 
                     <!-- Register Link -->
                     <div class="mt-3 text-center">
-                        <p>Don't have an account? <a href="{{ route('register') }}">Register</a></p>
+                        <p class="mb-0">Don't have an account? <a href="{{ route('register') }}">Register here</a></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 @endsection

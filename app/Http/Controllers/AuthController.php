@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;  // Import Auth facade
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
 class AuthController extends Controller
 {
-    // Menampilkan halaman login
+    // Menampilkan form login
     public function showLoginForm()
     {
         return view('auth.login');
@@ -18,23 +17,22 @@ class AuthController extends Controller
     // Proses login
     public function login(Request $request)
     {
-        // Validasi data login
-        $validatedData = $request->validate([
-            'email' => 'required|email',
+        $credentials = $request->validate([
+            'email'    => 'required|email',
             'password' => 'required|string',
         ]);
 
-        // Proses autentikasi
-        if (Auth::attempt(['email' => $validatedData['email'], 'password' => $validatedData['password']])) {
-            // Jika login berhasil, arahkan ke halaman dashboard (atau halaman lain)
-            return redirect()->intended('/dashboard');
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate(); // Mencegah session fixation
+            return redirect()->intended(route('home')); // ← Ganti ke 'home'
         }
 
-        // Jika gagal login, kembalikan ke halaman login dengan pesan error
-        return back()->withErrors(['email' => 'Invalid credentials.']);
+        return back()->withErrors([
+            'email' => 'Email atau password salah.',
+        ])->onlyInput('email');
     }
 
-    // Menampilkan halaman register
+    // Menampilkan form register
     public function showRegisterForm()
     {
         return view('auth.register');
@@ -43,21 +41,31 @@ class AuthController extends Controller
     // Proses register
     public function register(Request $request)
     {
-        // Validasi data yang dikirim dari form register
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email',
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        // Membuat pengguna baru
         $user = User::create([
-            'name' => $validatedData['name'],
-            'email' => $validatedData['email'],
-            'password' => Hash::make($validatedData['password']),
+            'name'     => $validatedData['name'],
+            'email'    => $validatedData['email'],
+            'password' => bcrypt($validatedData['password']),
         ]);
 
-        // Redirect ke halaman login setelah berhasil registrasi
-        return redirect()->route('login')->with('success', 'Registration successful! Please login.');
+        Auth::login($user);
+
+        return redirect()->route('home'); // ← Ganti ke 'home'
+    }
+
+    // Proses logout
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login');
     }
 }
