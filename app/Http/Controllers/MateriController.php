@@ -17,13 +17,28 @@ class MateriController extends Controller
     {
         $request->validate([
             'judul' => 'required|string|max:255',
-            'file' => 'required|file|max:102400', // max 100MB
+            'file' => 'required|file'
         ]);
 
         $file = $request->file('file');
-        $path = $file->store('materi', 'gcs'); // Simpan ke Google Cloud Storage
-        $url = Storage::disk('gcs')->url($path);
+        $filename = $file->getClientOriginalName();
+        $filetype = $file->getClientOriginalExtension();
+        $filesize = $file->getSize();
 
-        return back()->with('success', "Materi berhasil diunggah! URL: $url");
+        // Upload ke backend Flask / GCS bisa ditambahkan di sini...
+        $path = Storage::disk('gcs')->putFileAs('', $file, $filename);
+
+        // dapatkan URL public (jika visibility = public)
+        $url  = Storage::disk('gcs')->url($path);
+
+
+        return back()->with([
+            'success'  => 'File berhasil diupload!',
+            'filename' => $filename,
+            'filetype' => $file->getClientOriginalExtension(),
+            'filesize' => $file->getSize(),
+            'url'      => $url,
+        ]);
     }
+
 }
