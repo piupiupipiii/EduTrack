@@ -83,11 +83,12 @@
             </button>
         </a>
 
-        <a href="{{ route('upload.form') }}">
+        <a href="{{ route('materi.index') }}">
             <button class="action-button">
                 <span>☁️</span> Upload Materi
             </button>
         </a>
+
     </div>
 </div>
 

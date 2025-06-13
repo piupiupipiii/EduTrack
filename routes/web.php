@@ -35,9 +35,6 @@ Route::middleware(['auth'])->group(function () {
     // CRUD Nilai Siswa
     Route::resource('nilai', NilaiSiswaController::class);
 
-    // Upload File
-    Route::get('upload', [FileUploadController::class, 'showUploadForm'])->name('upload.form');
-    Route::post('upload', [FileUploadController::class, 'uploadFile'])->name('upload.submit');
 });
 
 Route::get('/nilai', [NilaiSiswaController::class, 'index'])->name('nilai.index');

@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/MateriController.php
 
 namespace App\Http\Controllers;
 
@@ -9,7 +10,7 @@ class MateriController extends Controller
 {
     public function index()
     {
-        return view('materi.index');
+        return view('siswa.materi');
     }
 
     public function upload(Request $request)
@@ -20,9 +21,9 @@ class MateriController extends Controller
         ]);
 
         $file = $request->file('file');
-        $path = $file->store('materi', 'gcs'); // simpan ke bucket GCS
+        $path = $file->store('materi', 'gcs'); // Simpan ke Google Cloud Storage
         $url = Storage::disk('gcs')->url($path);
 
-        return redirect()->back()->with('success', 'Materi berhasil diunggah. URL: ' . $url);
+        return back()->with('success', "Materi berhasil diunggah! URL: $url");
     }
 }
