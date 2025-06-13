@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\NilaiSiswaController;
+use App\Http\Controllers\MateriController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +39,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('upload', [FileUploadController::class, 'showUploadForm'])->name('upload.form');
     Route::post('upload', [FileUploadController::class, 'uploadFile'])->name('upload.submit');
 });
+
+Route::get('/nilai', [NilaiSiswaController::class, 'index'])->name('nilai.index');
+Route::post('/nilai', [NilaiSiswaController::class, 'store'])->name('nilai.store');
+Route::put('/nilai/{id}', [NilaiSiswaController::class, 'update'])->name('nilai.update');
+Route::delete('/nilai/{id}', [NilaiSiswaController::class, 'destroy'])->name('nilai.destroy');
+
+Route::get('/materi', [MateriController::class, 'index'])->name('materi.index');
+Route::post('/materi/upload', [MateriController::class, 'upload'])->name('materi.upload');
 
 // Logout
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');

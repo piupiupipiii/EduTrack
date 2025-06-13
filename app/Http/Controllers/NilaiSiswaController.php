@@ -1,62 +1,74 @@
-use App\Models\Nilai;
-
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Models\Nilai;  // Pastikan model Nilai sudah ada
 use Illuminate\Http\Request;
+use App\Models\NilaiSiswa;
 
 class NilaiSiswaController extends Controller
 {
-    // Menampilkan daftar nilai siswa
     public function index()
     {
-        $nilaiSiswa = Nilai::all();  // Ambil semua nilai siswa
-        return view('nilai.index', compact('nilaiSiswa'));
+        $data = NilaiSiswa::all();
+        return view('nilai.index', compact('data'));
     }
 
-    // Menampilkan form untuk menambah nilai siswa
-    public function create()
-    {
-        return view('nilai.create');
-    }
-
-    // Menyimpan data nilai siswa
     public function store(Request $request)
     {
         $request->validate([
-            'siswa_id' => 'required|exists:siswa,id',  // Misalnya Siswa sudah ada di database
-            'nilai' => 'required|numeric',
-            'subject' => 'required|string',  // Validasi mata pelajaran
+            'nama' => 'required',
+            'mapel' => 'required',
+            'kelas'   => 'required',
+            'tugas1' => 'nullable|numeric|min:0|max:100',
+            'tugas2' => 'nullable|numeric|min:0|max:100',
+            'tugas3' => 'nullable|numeric|min:0|max:100',
+            'tugas4' => 'nullable|numeric|min:0|max:100',
+            'uts'    => 'nullable|numeric|min:0|max:100',
+            'uas'    => 'nullable|numeric|min:0|max:100',
         ]);
 
-        Nilai::create($request->all());
-        return redirect()->route('nilai.index')->with('success', 'Nilai berhasil ditambahkan!');
-    }
+    $nilaiAkhir = collect([
+        $request->tugas1,
+        $request->tugas2,
+        $request->tugas3,
+        $request->tugas4,
+        $request->uts,
+        $request->uas,
+    ])->filter()->avg(); // Ambil rata-rata dari nilai yang diisi
 
-    // Menampilkan form untuk mengedit nilai siswa
-    public function edit(Nilai $nilai)
-    {
-        return view('nilai.edit', compact('nilai'));
-    }
+    NilaiSiswa::create([
+        'nama' => $request->nama,
+        'kelas' => $request->kelas,
+        'mapel' => $request->mapel,
+        'tugas1' => $request->tugas1,
+        'tugas2' => $request->tugas2,
+        'tugas3' => $request->tugas3,
+        'tugas4' => $request->tugas4,
+        'uts'    => $request->uts,
+        'uas'    => $request->uas,
+        'nilai'  => round($nilaiAkhir, 2),
+    ]);
 
-    // Memperbarui data nilai siswa
-    public function update(Request $request, Nilai $nilai)
+    return redirect()->back()->with('success', 'Data berhasil ditambahkan');
+}
+
+
+    public function update(Request $request, $id)
     {
         $request->validate([
-            'nilai' => 'required|numeric',
-            'subject' => 'required|string',  // Validasi mata pelajaran
+            'nama' => 'required',
+            'mapel' => 'required',
+            'nilai' => 'required|integer|min:0|max:100'
         ]);
 
-        $nilai->update($request->all());
-        return redirect()->route('nilai.index')->with('success', 'Nilai berhasil diperbarui!');
+        $item = NilaiSiswa::findOrFail($id);
+        $item->update($request->all());
+
+        return redirect()->back()->with('success', 'Data berhasil diubah');
     }
 
-    // Menghapus nilai siswa
-    public function destroy(Nilai $nilai)
+    public function destroy($id)
     {
-        $nilai->delete();
-        return redirect()->route('nilai.index')->with('success', 'Nilai berhasil dihapus!');
+        NilaiSiswa::findOrFail($id)->delete();
+        return redirect()->back()->with('success', 'Data berhasil dihapus');
     }
 }
