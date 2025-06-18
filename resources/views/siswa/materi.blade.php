@@ -7,15 +7,26 @@
         <p class="upload-subtitle">Unggah materi pembelajaran untuk siswa</p>
     </div>
 
+    {{-- VALIDASI --}}
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <strong>Terjadi kesalahan saat mengunggah:</strong>
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{-- PESAN SUKSES --}}
     @if(session('success'))
         <div class="alert alert-success">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-            </svg>
             {{ session('success') }}
         </div>
     @endif
 
+    {{-- INFO FILE TERAKHIR --}}
     @if(session('filename'))
         <div class="alert alert-info">
             <strong>Nama File:</strong> {{ session('filename') }}<br>
@@ -24,186 +35,185 @@
         </div>
     @endif
 
+    {{-- FORM UPLOAD --}}
     <div class="upload-card">
         <form action="{{ route('materi.upload') }}" method="POST" enctype="multipart/form-data" class="upload-form">
             @csrf
-
             <div class="form-group">
                 <label for="judul" class="form-label">Judul Materi</label>
-                <input type="text" name="judul" id="judul" class="form-input" placeholder="Masukkan judul materi" required>
+                <input type="text" name="judul" id="judul" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+                <label for="kelas" class="form-label">Kelas</label>
+                <input type="text" name="kelas" id="kelas" class="form-input" required>
             </div>
 
             <div class="form-group">
                 <label for="file" class="form-label">File Materi</label>
-                <div class="file-upload">
-                    <input type="file" name="file" id="file" class="file-input" required>
-                    <label for="file" class="file-label">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        <span>Pilih file atau drag & drop</span>
-                        <p class="file-hint">Format yang didukung: PDF, DOCX, PPTX, ZIP, Gambar, Video</p>
-                    </label>
-                </div>
+                <input type="file" name="file" id="file" class="form-input" required>
             </div>
 
-            <button type="submit" class="submit-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
-                </svg>
-                Upload Materi
-            </button>
+            <button type="submit" class="submit-btn">Upload Materi</button>
         </form>
     </div>
+
+    {{-- RIWAYAT DAN PREVIEW --}}
+    @if(isset($riwayatMateri) && count($riwayatMateri))
+    <div class="upload-card" style="margin-top:2rem;">
+        <h3 style="margin-bottom:1rem;color:#2c3e50;">Riwayat Upload Materi</h3>
+
+        <div style="display: flex; gap: 2rem;">
+            {{-- LIST FILE --}}
+            <div style="flex: 1;">
+                <ul style="list-style:none;padding:0;">
+                    @foreach($riwayatMateri as $materi)
+                        @php
+                            $ext = strtolower(pathinfo($materi->filename, PATHINFO_EXTENSION));
+                            $icon = match($ext) {
+                                'pdf' => '📄',
+                                'jpg', 'jpeg', 'png' => '🖼️',
+                                'mp4' => '🎬',
+                                default => '📁'
+                            };
+                        @endphp
+                        <li onclick="previewMateri('{{ $materi->url }}', '{{ $ext }}', '{{ addslashes($materi->judul) }}')" 
+                            style="margin-bottom:.8rem;padding:.5rem;border-bottom:1px solid #eee;cursor:pointer">
+                            <strong>{{ $icon }} {{ $materi->judul }}</strong> ({{ $materi->kelas }})<br>
+                            <small>{{ $materi->filename }} • {{ number_format($materi->filesize/1024,2) }} KB</small>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+
+            {{-- PREVIEW PANEL --}}
+            <div id="preview-panel" style="flex: 2; border-left: 1px solid #ccc; padding-left: 1rem;">
+                <p><em>Klik salah satu file untuk melihat preview di sini.</em></p>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
 
+{{-- SCRIPT PREVIEW --}}
+<script>
+function previewMateri(url, ext, title) {
+    let html = `<h4 style="color:#2c3e50;">📂 Preview: ${title}</h4>`;
+    ext = ext.toLowerCase();
+
+    if (ext === 'pdf') {
+        html += `<iframe src="${url}" width="100%" height="500px" style="border:1px solid #ccc;border-radius:8px;"></iframe>`;
+    } else if (['jpg', 'jpeg', 'png'].includes(ext)) {
+        html += `<img src="${url}" alt="${title}" style="max-width:100%;border:1px solid #ccc;border-radius:8px;">`;
+    } else if (ext === 'mp4') {
+        html += `<video controls width="100%" style="border:1px solid #ccc;border-radius:8px;">
+                    <source src="${url}" type="video/mp4">Browser kamu tidak mendukung video.
+                 </video>`;
+    } else {
+        html += `<p><em>Preview tidak tersedia untuk file .${ext}</em></p>`;
+    }
+
+    document.getElementById('preview-panel').innerHTML = html;
+}
+</script>
+
 <style>
+.upload-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.upload-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.upload-title {
+    font-size: 2rem;
+    color: #2c3e50;
+}
+.upload-subtitle {
+    color: #7f8c8d;
+}
+.upload-card {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+.alert {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+.upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.form-label {
+    font-weight: 500;
+    color: #2c3e50;
+}
+.form-input {
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+}
+.form-input:focus {
+    outline: none;
+    border-color: #2196F3;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+.submit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.submit-btn:hover {
+    background-color: #0d8bf2;
+}
+@media (max-width: 768px) {
     .upload-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 2rem;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .upload-header {
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-    .upload-title {
-        font-size: 2rem;
-        color: #2c3e50;
-        margin-bottom: 0.5rem;
-    }
-    .upload-subtitle {
-        color: #7f8c8d;
-        font-size: 1rem;
-    }
-    .alert {
         padding: 1rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.3rem;
-    }
-    .alert-success {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-    .alert-info {
-        background-color: #d1ecf1;
-        color: #0c5460;
-        border: 1px solid #bee5eb;
     }
     .upload-card {
-        background: white;
-        border-radius: 0.75rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 2rem;
+        padding: 1.5rem;
     }
-    .upload-form {
-        display: flex;
+    .upload-card > div {
         flex-direction: column;
-        gap: 1.5rem;
     }
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    .form-label {
-        font-weight: 500;
-        color: #2c3e50;
-        font-size: 0.95rem;
-    }
-    .form-input {
-        padding: 0.75rem 1rem;
-        border: 1px solid #ddd;
-        border-radius: 0.5rem;
-        font-size: 1rem;
-    }
-    .form-input:focus {
-        outline: none;
-        border-color: #2196F3;
-        box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
-    }
-    .file-upload {
-        position: relative;
-    }
-    .file-input {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        border: 0;
-    }
-    .file-label {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-        border: 2px dashed #ddd;
-        border-radius: 0.5rem;
-        background-color: #f8f9fa;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    .file-label:hover {
-        border-color: #2196F3;
-        background-color: #f0f7ff;
-    }
-    .file-label svg {
-        width: 2.5rem;
-        height: 2.5rem;
-        color: #7f8c8d;
-        margin-bottom: 1rem;
-    }
-    .file-label span {
-        font-weight: 500;
-        color: #2c3e50;
-        margin-bottom: 0.5rem;
-    }
-    .file-hint {
-        color: #7f8c8d;
-        font-size: 0.85rem;
-        margin-top: 0.5rem;
-    }
-    .submit-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1.5rem;
-        background-color: #2196F3;
-        color: white;
-        border: none;
-        border-radius: 0.5rem;
-        font-size: 1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-    .submit-btn:hover {
-        background-color: #0d8bf2;
-    }
-    .submit-btn svg {
-        width: 1rem;
-        height: 1rem;
-    }
-    @media (max-width: 768px) {
-        .upload-container {
-            padding: 1rem;
-        }
-        .upload-card {
-            padding: 1.5rem;
-        }
-    }
+}
 </style>
 @endsection

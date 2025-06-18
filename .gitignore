@@ -17,4 +17,5 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-"storage/keys/gcs-service-account.json" 
+storage/keys/gcs-service-account.json
+app/gcs-service-account.json

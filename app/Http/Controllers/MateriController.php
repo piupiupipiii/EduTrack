@@ -5,40 +5,48 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Materi;
+use Illuminate\Support\Str;
 
 class MateriController extends Controller
 {
     public function index()
     {
-        return view('siswa.materi');
+        $riwayatMateri = Materi::latest()->take(10)->get();
+        return view('siswa.materi', compact('riwayatMateri'));
     }
+
 
     public function upload(Request $request)
     {
         $request->validate([
             'judul' => 'required|string|max:255',
-            'file' => 'required|file'
+            'kelas' => 'required|string|max:50',
+            'file' => 'required|file|mimes:pdf,docx,pptx,zip,jpg,jpeg,png,mp4|max:10240'
         ]);
 
+        $kelas = Str::slug($request->kelas, '_');
         $file = $request->file('file');
-        $filename = $file->getClientOriginalName();
-        $filetype = $file->getClientOriginalExtension();
-        $filesize = $file->getSize();
-
-        // Upload ke backend Flask / GCS bisa ditambahkan di sini...
-        $path = Storage::disk('gcs')->putFileAs('', $file, $filename);
-
-        // dapatkan URL public (jika visibility = public)
-        $url  = Storage::disk('gcs')->url($path);
-
+        $filename = time() . '_' . Str::slug($file->getClientOriginalName(), '_');
+        $path = $file->storeAs("public/materi/{$kelas}", $filename);
+        $url = asset("storage/materi/{$kelas}/{$filename}");
+        
+        // Simpan ke database
+        Materi::create([
+            'judul' => $request->judul,
+            'kelas' => $request->kelas,
+            'filename' => $filename,
+            'filetype' => $file->getClientMimeType(),
+            'filesize' => $file->getSize(),
+            'url' => $url,
+        ]);
 
         return back()->with([
             'success'  => 'File berhasil diupload!',
             'filename' => $filename,
-            'filetype' => $file->getClientOriginalExtension(),
+            'filetype' => $file->getClientMimeType(),
             'filesize' => $file->getSize(),
             'url'      => $url,
         ]);
     }
-
 }
