@@ -1,6 +1,7 @@
 [project]
-name = ""
+name = "edutrack"
 version = "0.0.1"
+requires-python = ">=3.13,<4.0"
 dependencies = [
     "fastapi",
     "uvicorn",
