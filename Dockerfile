@@ -25,6 +25,7 @@ WORKDIR /var/www/html
 
 # Copy only composer files to leverage Docker caching
 COPY composer.json composer.lock ./
+COPY . .
 
 # Install Composer dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
@@ -36,7 +37,8 @@ WORKDIR /var/www/html/app
 
 COPY app/.python-version app/pyproject.toml app/uv.lock ./
 
-RUN uv sync --locked
+RUN (rm -rf .venv || true) \
+    && uv sync --locked
 
 # Stage 2: Production image
 FROM base AS production
