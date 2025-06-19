@@ -115,52 +115,35 @@ def upload_backup():
 
 @app.route("/backup-now", methods=["POST"])
 def backup_now():
-    import subprocess
-
     timestamp = int(time.time())
-    filename = f"{timestamp}_uas-db_backup.sql"
+    filename  = f"{timestamp}_{os.environ['DB_NAME']}_backup.sql"
 
-    # Folder sementara lokal
-    temp_dir = os.path.join(os.getcwd(), "temp")
-    os.makedirs(temp_dir, exist_ok=True)
+    temp_dir  = "/tmp"                     # Di Cloud Run gunakan /tmp
     local_path = os.path.join(temp_dir, filename)
 
-    # Konfigurasi database Laragon
-    DB_NAME = "uas-db"
-    DB_USER = "root"
-    DB_PASSWORD = ""  # Kosong default Laragon
-    DB_HOST = "127.0.0.1"
-    DB_PORT = "3306"
-
-    # Path mysqldump dari Laragon
-    mysqldump_path = r"C:\laragon\bin\mysql\mysql-8.0.36-winx64\bin\mysqldump.exe"
-
-
-    dump_command = [
-        mysqldump_path,
-        f"--user={DB_USER}",
-        f"--host={DB_HOST}",
-        f"--port={DB_PORT}",
-        DB_NAME
+    dump_cmd = [
+        "mysqldump",
+        "-h", os.environ.get("DB_HOST", "127.0.0.1"),
+        "-P", os.environ.get("DB_PORT", "3306"),
+        "-u", os.environ["DB_USER"],
+        f"-p{os.environ['DB_PASSWORD']}",
+        os.environ["DB_NAME"],
     ]
-
-    env = os.environ.copy()
-    if DB_PASSWORD:
-        env["MYSQL_PWD"] = DB_PASSWORD
 
     try:
         with open(local_path, "w", encoding="utf-8") as f:
-            subprocess.run(dump_command, stdout=f, stderr=subprocess.PIPE, check=True, env=env)
+            subprocess.run(dump_cmd, stdout=f, check=True)
 
         # Upload ke GCS
-        blob = bucket.blob(f"backup/{filename}")
-        blob.upload_from_filename(local_path, content_type="application/sql")
-
+        bucket.blob(f"backup/{filename}").upload_from_filename(
+            local_path, content_type="application/sql"
+        )
         os.remove(local_path)
         return redirect(url_for("index"))
 
     except subprocess.CalledProcessError as e:
-        return jsonify(error="Gagal membackup database", detail=e.stderr.decode()), 500
+        return jsonify(error="Gagal membackup database",
+                       detail=e.stderr.decode() if e.stderr else str(e)), 500
 
     
 @app.route("/download-backup", methods=["GET"])
@@ -179,4 +162,6 @@ def download_backup():
     return send_file(buf, download_name=filename, as_attachment=True)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    import os
+    port = int(os.environ.get("PORT", 8080)) 
+    app.run(host="0.0.0.0", port=port) 

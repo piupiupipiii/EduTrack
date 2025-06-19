@@ -32,10 +32,12 @@ try {
     Write-Error "An error occurred: $($_.Exception.Message)"
 }
 
-docker push "$($IMAGE_GCP_TAG_VERSION)"
-docker push "$($IMAGE_GCP):latest"
-Write-Host "Success push update image '$CONTAINER_NAME'."
-
 # Run the Docker container
 docker run -d --name "$($CONTAINER_NAME)" -p 80:80 -p 5000:5000 -v ./storage:/var/www/html/storage "$($IMAGE_GITHUB):latest"
 Write-Host "Success update container '$CONTAINER_NAME'."
+
+docker push "$($IMAGE_GCP_TAG_VERSION)"
+docker push "$($IMAGE_GCP):latest"
+# docker push "$($IMAGE_GITHUB_TAG_VERSION)"
+# docker push "$($IMAGE_GITHUB):latest"
+Write-Host "Success push update image '$CONTAINER_NAME'."
