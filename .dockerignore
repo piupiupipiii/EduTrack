@@ -1,0 +1,96 @@
+# ====================================
+# General and Version Control Exclusions
+# ====================================
+.git/
+.gitignore
+.gitmodules
+.svn/
+.hg/
+CVS/
+
+# IDE and Editor Specific Files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.iml
+.DS_Store
+Thumbs.db
+
+# Operating System Specific
+Desktop.ini
+ehthumbs.db
+.localized
+.Spotlight-V100
+.Trashes
+
+# Common Build Output and Temporary Files
+build/
+dist/
+target/
+tmp/
+*.tmp
+*.log
+logs/
+.nyc_output/  # Jest/Cypress coverage
+coverage/    # General test coverage reports
+
+# ====================================
+# Laravel (PHP) Specific Exclusions
+# ====================================
+/vendor/             # Composer dependencies (install via composer install --no-dev)
+/node_modules/       # Frontend dependencies (install via npm/yarn/pnpm install)
+.env                 # Environment variables (do NOT include sensitive data in image)
+.env.* # Other environment files
+!.env.production.encrypted
+/storage/*.log       # Laravel log files
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/bootstrap/cache/*.php
+/public/hot          # Laravel Mix/Vite hot reload file
+/public/build/       # Laravel Mix/Vite build output (if built locally, usually built inside container)
+!/public/build       # Exception: If you build frontend locally and copy to image, un-comment this.
+composer.lock        # Typically committed, but if dynamically generated, can be ignored
+yarn.lock            # Similarly, typically committed
+package-lock.json    # Similarly, typically committed
+pnpm-lock.yaml       # Similarly, typically committed
+
+# ====================================
+# Python (with uv venv) Specific Exclusions
+# ====================================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python/
+venv/                # Standard virtual environment (if not using uv in root)
+.venv/               # Common virtual environment name
+.uv/                 # uv virtual environment specific metadata/cache (e.g., .uv/bin, .uv/lib)
+uv.lock              # uv lock file (if you have one, usually committed)
+pip-wheel-metadata/  # Temporary directory created by pip/uv during installation
+*.egg-info/          # Python distribution metadata
+.mypy_cache/         # MyPy type checking cache
+.pytest_cache/       # Pytest cache
+.ruff_cache/         # Ruff linter cache
+
+# ====================================
+# Other Potential Exclusions (Project Specific)
+# ====================================
+*.sqlite             # SQLite database files (if used locally)
+*.db
+dump.sql             # Database dumps
+data/                # Generic data directories that are not part of the app
+uploads/             # User uploaded files
+certificates/        # Sensitive certificate files
+keys/                # Private keys
+secrets/             # Other secret files
+
+# ====================================
+# Keep Docker-related files (important for the build context)
+# ====================================
+!Dockerfile
+!.dockerignore
+
+deploy.ps1
+deploy.sh
