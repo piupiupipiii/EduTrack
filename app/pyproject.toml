@@ -3,13 +3,9 @@ name = "edutrack"
 version = "0.0.1"
 requires-python = ">=3.13,<4.0"
 dependencies = [
-    "fastapi",
-    "uvicorn",
-    "psycopg2-binary",
-    "sqlalchemy",
-    "python-dotenv",
     "flask>=3.1.1",
     "google-cloud-storage>=3.1.1",
+    "werkzeug>=3.1.3",
 ]
 
 [tool.uv]
